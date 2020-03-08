@@ -213,7 +213,7 @@ static void sp_tiled_matmul_ws(const elem_t * A, const elem_t * B,
         bool no_bias, bool repeating_bias) {
 
   const uint32_t A_sp_addr_start = 0;
-  const uint32_t B_sp_addr_start = I * K * DIM;
+  const uint32_t B_sp_addr_start = (BANK_NUM/2)*BANK_ROWS*DIM; // I * K * DIM;
   const uint32_t D_sp_addr_start = 1 << (ADDR_LEN-1);
   const uint32_t C_sp_addr_start = 3 << (ADDR_LEN-2);
 
@@ -414,13 +414,13 @@ void tiled_matmul(size_t dim_I, size_t dim_J, size_t dim_K,
 
   // Make sure that the tiling factors make sense
   if (tile_I * DIM > dim_I) {
-    printf("tile_I is too large (tile_I * DIM > dim_I)\n");
+    printf("tile_I (%d) is too large (tile_I * DIM > dim_I)\n", tile_I);
     exit(1);
   } else if (tile_J * DIM > dim_J) {
-    printf("tile_J is too large (tile_J * DIM > dim_J)\n");
+    printf("tile_J (%d) is too large (tile_J * DIM > dim_J)\n", tile_J);
     exit(1);
   } else if (tile_K * DIM > dim_K) {
-    printf("tile_K is too large (tile_K * DIM > dim_K)\n");
+    printf("tile_K (%d) is too large (tile_K * DIM > dim_K)\n", tile_K);
     exit(1);
   }
 
@@ -462,6 +462,7 @@ void tiled_matmul(size_t dim_I, size_t dim_J, size_t dim_K,
   }
 }
 
+#define MIN(a, b) (a < b ? a : b)
 // This function runs a tiled matrix multiplication, with automatically
 // calculated tiling factors
 void tiled_matmul_auto(size_t dim_I, size_t dim_J, size_t dim_K,
@@ -473,9 +474,10 @@ void tiled_matmul_auto(size_t dim_I, size_t dim_J, size_t dim_K,
      * REPLACE THE THREE LINES BELOW IF YOU WANT TO USE THE
      * "tiled_matmul_auto" BELOW
      */
-    size_t tile_I = 1;
-    size_t tile_J = 1;
-    size_t tile_K = 1;
+    size_t tile_I = MIN((int) sqrt(ACC_ROWS/DIM), dim_I/DIM);
+    size_t tile_J = tile_I;
+    size_t tile_K =  MIN(BANK_NUM * BANK_ROWS / (DIM * 2 * tile_I), dim_K/DIM); 
+    printf("dim = %d x %d x %d, tile = %d x %d x %d\n", dim_I, dim_J, dim_K, tile_I, tile_J, tile_K);
 
     tiled_matmul(dim_I, dim_J, dim_K,
         A, B, D, C, act, shift, repeating_bias,
