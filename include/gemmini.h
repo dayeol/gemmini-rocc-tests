@@ -213,7 +213,7 @@ static void sp_tiled_matmul_ws(const elem_t * A, const elem_t * B,
         bool no_bias, bool repeating_bias) {
 
   const uint32_t A_sp_addr_start = 0;
-  const uint32_t B_sp_addr_start = I*K*DIM; //(BANK_NUM/2)*BANK_ROWS*DIM; // I * K * DIM;
+  const uint32_t B_sp_addr_start = (BANK_NUM/2) * BANK_ROWS; // I * K * DIM;
   const uint32_t D_sp_addr_start = 1 << (ADDR_LEN-1);
   const uint32_t C_sp_addr_start = 3 << (ADDR_LEN-2);
 
