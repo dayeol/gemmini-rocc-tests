@@ -474,9 +474,10 @@ void tiled_matmul_auto(size_t dim_I, size_t dim_J, size_t dim_K,
      * REPLACE THE THREE LINES BELOW IF YOU WANT TO USE THE
      * "tiled_matmul_auto" BELOW
      */
-    size_t tile_I = MIN((int) sqrt(ACC_ROWS/DIM), dim_I/DIM);
+    size_t tile_I = MIN((int) sqrt(ACC_ROWS/DIM), MIN(dim_I/DIM, dim_J/DIM));
     size_t tile_J = tile_I;
     size_t tile_K =  MIN(BANK_NUM * BANK_ROWS / (DIM * 2 * tile_I), dim_K/DIM); 
+    //printf("dim: %d x %d x %d, tile: %d x %d x %d\n", dim_I, dim_J, dim_K, tile_I, tile_J, tile_K);
 
     tiled_matmul(dim_I, dim_J, dim_K,
         A, B, D, C, act, shift, repeating_bias,
