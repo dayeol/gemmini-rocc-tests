@@ -142,6 +142,9 @@ uint64_t read_cycles() {
 #define k_PRELOAD 6
 #define k_FLUSH 7
 #define k_LOOP_WS 8
+// EE290DAYEOL
+#define k_LOCK		9
+#define k_UNLOCK	10
 
 #define CONFIG_EX 0
 #define CONFIG_LD 1
@@ -187,6 +190,12 @@ uint64_t read_cycles() {
 // weight-stationary matmul loop
 #define gemmini_loop_ws(A, B, I, J, K, bias) \
     ROCC_INSTRUCTION_RS1_RS2(XCUSTOM_ACC, ((uint64_t)(B) << 32) | (A), ((uint64_t)(bias) << 48) | ((uint64_t)(K) << 32) | ((J) << 16) | (I), k_LOOP_WS)
+
+// EE290DAYEOL: lock and unlock
+#define gemmini_lock() \
+	ROCC_INSTRUCTION_RS1_RS2(XCUSTOM_ACC, 0, 0, k_LOCK)
+#define gemmini_unlock() \
+	ROCC_INSTRUCTION_RS1_RS2(XCUSTOM_ACC, 0, 0, k_UNLOCK)
 
 // config
 #define gemmini_config_ex(mode, act, sys_shift, acc_shift, relu6_shift) \

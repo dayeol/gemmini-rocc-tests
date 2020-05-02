@@ -12,7 +12,8 @@ tests = \
 	very_large_matmul \
 	cifar_quant \
 	read_spad \
-	read_virt 
+	read_virt \
+ 	identity_lock	
 
 tests_baremetal = $(tests:=-baremetal)
 ifdef BAREMETAL_ONLY
