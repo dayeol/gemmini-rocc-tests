@@ -32,7 +32,7 @@ int main(int argc, void** argv) {
   size_t Out_sp_addr = BANK_ROWS;
   size_t Identity_sp_addr = 2*BANK_ROWS;
 
-	gemmini_mvin(addr, In_sp_addr);
+  gemmini_mvin(addr, In_sp_addr);
   gemmini_mvout(Out, In_sp_addr);	
   // printf("Move \"In\" matrix from main memory into Gemmini's scratchpad\n");
   //gemmini_mvin(In, In_sp_addr);

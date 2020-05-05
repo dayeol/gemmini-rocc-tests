@@ -18,13 +18,23 @@ int main() {
     }
 #endif
 
+  printf("locking\n");
+  gemmini_lock();
+  printf("locked\n");
   // printf("Flush Gemmini TLB of stale virtual addresses\n");
   gemmini_flush(0);
 
-	elem_t In[DIM][DIM];
+  // printf("Initialize our input and output matrices in main memory\n");
+  
+  elem_t In[DIM][DIM];
   elem_t Out[DIM][DIM];
   elem_t Identity[DIM][DIM];
 
+  for (size_t i = 0; i < DIM; i++)
+    for (size_t j = 0; j < DIM; j++) {
+      In[i][j] = 10 + i * DIM + j;
+      Identity[i][j] = i == j;
+    }
 
   // printf("Calculate the scratchpad addresses of all our matrices\n");
   // printf("  Note: The scratchpad is \"row-addressed\", where each address contains one matrix row\n");
@@ -32,30 +42,30 @@ int main() {
   size_t Out_sp_addr = BANK_ROWS;
   size_t Identity_sp_addr = 2*BANK_ROWS;
 
-  // printf("Move \"In\" matrix from main memory into Gemmini's scratchpad\n");
-  //gemmini_mvin(In, In_sp_addr);
+  printf("Move \"In\" matrix from main memory into Gemmini's scratchpad\n");
+  gemmini_mvin(In, In_sp_addr);
 
-  // printf("Move \"Identity\" matrix from main memory into Gemmini's scratchpad\n");
-  //gemmini_mvin(Identity, Identity_sp_addr);
+  printf("Move \"Identity\" matrix from main memory into Gemmini's scratchpad\n");
+  gemmini_mvin(Identity, Identity_sp_addr);
 
-  // printf("Multiply \"In\" matrix with \"Identity\" matrix with a bias of 0\n");
+  printf("Multiply \"In\" matrix with \"Identity\" matrix with a bias of 0\n");
   gemmini_config_ex(WEIGHT_STATIONARY, 0, 0, 0, 0);
-  //gemmini_preload(Identity_sp_addr, Out_sp_addr);
-  //gemmini_compute_preloaded(In_sp_addr, GARBAGE_ADDR);
+  gemmini_preload(Identity_sp_addr, Out_sp_addr);
+  gemmini_compute_preloaded(In_sp_addr, GARBAGE_ADDR);
 
-  // printf("Move \"Out\" matrix from Gemmini's scratchpad into main memory\n");
+  printf("Move \"Out\" matrix from Gemmini's scratchpad into main memory\n");
   gemmini_mvout(Out, Out_sp_addr);
 
-  // printf("Fence till Gemmini completes all memory operations\n");
+  printf("Fence till Gemmini completes all memory operations\n");
   gemmini_fence();
 
-  printf("\"Out\" matrix:\n");
-  printMatrix(Out);
-  printf("\n");
+  printf("unlocking\n");
+  gemmini_unlock();
+  printf("unlocked\n");
+
 
   // printf("Check whether \"In\" and \"Out\" matrices are identical\n");
-  /*
-	if (!is_equal(In, Out)) {
+  if (!is_equal(In, Out)) {
     printf("Input and output matrices are different!\n");
     printf("\"In\" matrix:\n");
     printMatrix(In);
@@ -68,7 +78,11 @@ int main() {
   }
 
   printf("Input and output matrices are identical, as expected\nPASS\n");
-	*/
+
+  gemmini_mvout(Out, Out_sp_addr);
+  gemmini_fence();
+  printMatrix(Out);
+
   exit(0);
 }
 

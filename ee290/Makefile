@@ -13,7 +13,9 @@ tests = \
 	cifar_quant \
 	read_spad \
 	read_virt \
- 	identity_lock	
+ 	identity_lock \
+	lock_unlock \
+	identity_check_clean	
 
 tests_baremetal = $(tests:=-baremetal)
 ifdef BAREMETAL_ONLY

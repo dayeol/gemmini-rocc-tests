@@ -69,6 +69,9 @@ int main() {
   }
 
   printf("Input and output matrices are identical, as expected\nPASS\n");
+
+  //gemmini_mvout(Out, Out_sp_addr);
+  //printMatrix(Out);
   exit(0);
 }
 
